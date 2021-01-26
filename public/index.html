@@ -1,27 +1,120 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="utf-8" />
-    <link rel="icon" href="/favicon.ico" />
-    <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="description" content="Web site created using create-snowpack-app" />
-    <link rel="stylesheet" type="text/css" href="/index.css" />
-    <title>Snowpack App</title>
-  </head>
-  <body>
-    <img id="img" src="/logo.svg" />
-    <canvas id="canvas"></canvas>
-    <noscript>You need to enable JavaScript to run this app.</noscript>
-    <script type="module" src="/dist/index.js"></script>
-    <!--
-      This HTML file is a template.
-      If you open it directly in the browser, you will see an empty page.
-
-      You can add webfonts, meta tags, or analytics to this file.
-      The build step will place the bundled scripts into the <body> tag.
-
-      To begin the development, run `npm start` or `yarn start`.
-      To create a production bundle, use `npm run build` or `yarn build`.
-    -->
-  </body>
+	<head>
+		<meta charset="utf-8" />
+		<link rel="icon" href="/favicon.ico" />
+		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="description" content="Drag-and-drop list reorder with Xstate and Typescript" />
+		<link rel="stylesheet" type="text/css" href="/index.css" />
+		<title>Drad-and-drop Reorder</title>
+	</head>
+	<body>
+		<header
+			class="flex justify-center items-center relative z-10 h-32 text-center text-2xl bg-blue-200 font-medium"
+		>
+			<h1>Drag-and-drop list reorder with Xstate and Typescript</h1>
+		</header>
+		<main class="flex items-center justify-center min-h-screen py-20 bg-gray-600">
+			<ul class="js-dnd-list space-y-2 text-3xl">
+				<li
+					class="flex items-center justify-between _list-item js-dnd-list-el w-96 px-2 border-gray-300 border-solid border-2 rounded-md bg-blue-600 text-gray-300"
+				>
+					<span class="p-2">Item 1</span>
+					<button>
+						<svg class="w-8" viewBox="0 0 512 512" width="100" title="grip-lines" fill="currentColor">
+							<path
+								d="M496 288H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h480c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm0-128H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h480c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16z"
+							/>
+						</svg>
+					</button>
+				</li>
+				<li
+					class="_list-item js-dnd-list-el flex items-center justify-between w-96 px-2 border-gray-300 border-solid border-2 rounded-md bg-blue-600 text-gray-300"
+				>
+					<span class="py-4">Item 2</span>
+					<button>
+						<svg class="w-8" viewBox="0 0 512 512" width="100" title="grip-lines" fill="currentColor">
+							<path
+								d="M496 288H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h480c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm0-128H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h480c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16z"
+							/>
+						</svg>
+					</button>
+				</li>
+				<li
+					class="_list-item js-dnd-list-el flex items-center justify-between w-96 px-2 border-gray-300 border-solid border-2 rounded-md bg-blue-600 text-gray-300"
+				>
+					<span>Item 3</span>
+					<button>
+						<svg class="w-8" viewBox="0 0 512 512" width="100" title="grip-lines" fill="currentColor">
+							<path
+								d="M496 288H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h480c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm0-128H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h480c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16z"
+							/>
+						</svg>
+					</button>
+				</li>
+				<li
+					class="_list-item js-dnd-list-el flex items-center justify-between w-96 px-2 border-gray-300 border-solid border-2 rounded-md bg-blue-600 text-gray-300"
+				>
+					<span>Item 4</span>
+					<button>
+						<svg class="w-8" viewBox="0 0 512 512" width="100" title="grip-lines" fill="currentColor">
+							<path
+								d="M496 288H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h480c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm0-128H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h480c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16z"
+							/>
+						</svg>
+					</button>
+				</li>
+				<li
+					class="_list-item js-dnd-list-el flex items-center justify-between w-96 px-2 border-gray-300 border-solid border-2 rounded-md bg-blue-600 text-gray-300"
+				>
+					<span class="py-8">Item 5</span>
+					<button>
+						<svg class="w-8" viewBox="0 0 512 512" width="100" title="grip-lines" fill="currentColor">
+							<path
+								d="M496 288H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h480c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm0-128H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h480c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16z"
+							/>
+						</svg>
+					</button>
+				</li>
+				<li
+					class="_list-item js-dnd-list-el flex items-center justify-between w-96 px-2 border-gray-300 border-solid border-2 rounded-md bg-blue-600 text-gray-300"
+				>
+					<span class="py-1">Item 6</span>
+					<button>
+						<svg class="w-8" viewBox="0 0 512 512" width="100" title="grip-lines" fill="currentColor">
+							<path
+								d="M496 288H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h480c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm0-128H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h480c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16z"
+							/>
+						</svg>
+					</button>
+				</li>
+				<li
+					class="_list-item js-dnd-list-el flex items-center justify-between w-96 px-2 border-gray-300 border-solid border-2 rounded-md bg-blue-600 text-gray-300"
+				>
+					<span>Item 7</span>
+					<button>
+						<svg class="w-8" viewBox="0 0 512 512" width="100" title="grip-lines" fill="currentColor">
+							<path
+								d="M496 288H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h480c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm0-128H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h480c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16z"
+							/>
+						</svg>
+					</button>
+				</li>
+				<li
+					class="_list-item js-dnd-list-el flex items-center justify-between w-96 px-2 border-gray-300 border-solid border-2 rounded-md bg-blue-600 text-gray-300"
+				>
+					<span class="py-16">Item 8</span>
+					<button>
+						<svg class="w-8" viewBox="0 0 512 512" width="100" title="grip-lines" fill="currentColor">
+							<path
+								d="M496 288H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h480c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16zm0-128H16c-8.8 0-16 7.2-16 16v32c0 8.8 7.2 16 16 16h480c8.8 0 16-7.2 16-16v-32c0-8.8-7.2-16-16-16z"
+							/>
+						</svg>
+					</button>
+				</li>
+			</ul>
+		</main>
+		<noscript>You need to enable JavaScript to run this app.</noscript>
+		<script type="module" src="/dist/index.js"></script>
+	</body>
 </html>
