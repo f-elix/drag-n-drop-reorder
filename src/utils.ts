@@ -1,3 +1,4 @@
+import type { Coords } from 'types/static';
 import type { EventObject } from 'xstate';
 
 export function assertEventType<TE extends EventObject, TType extends TE['type']>(
@@ -11,7 +12,7 @@ export function assertEventType<TE extends EventObject, TType extends TE['type']
 
 export const generateId = (): string => `${Math.floor(Math.random() * Date.now())}`;
 
-export const getElMid = (el: HTMLElement): { x: number; y: number } | undefined => {
+export const getElMid = (el: HTMLElement): Coords | undefined => {
 	if (!el) {
 		return;
 	}
@@ -23,7 +24,7 @@ export const getElMid = (el: HTMLElement): { x: number; y: number } | undefined 
 	};
 };
 
-export const getPosition = (element: HTMLElement): { x: number; y: number } => {
+export const getPosition = (element: HTMLElement): { left: number; top: number } => {
 	let xPos = 0;
 	let yPos = 0;
 
@@ -46,39 +47,20 @@ export const getPosition = (element: HTMLElement): { x: number; y: number } => {
 		el = el.offsetParent as HTMLElement;
 	}
 	return {
-		x: xPos,
-		y: yPos
+		left: xPos,
+		top: yPos
 	};
 };
 
-export const getElOffsetMid = (el: HTMLElement): number => {
+export const getElOffsetMid = (el: HTMLElement): Coords | undefined => {
 	if (!el) {
-		return 0;
+		return;
 	}
-	const top = getPosition(el).y;
-	return top + el.offsetHeight / 2;
-};
-
-export const getElOffsetTop = (el: HTMLElement): number => {
-	if (!el) {
-		return 0;
-	}
-	const top = getPosition(el).y;
-	return top;
-};
-
-export const getElOffsetBottom = (el: HTMLElement): number => {
-	if (!el) {
-		return 0;
-	}
-	const top = getPosition(el).y;
-	return top + el.offsetHeight;
-};
-
-export const reorderArray = (array: any[], from: number, to: number): any[] => {
-	const reorderedArray = array;
-	reorderedArray.splice(to, 0, reorderedArray.splice(from, 1)[0]);
-	return reorderedArray;
+	const { left, top } = getPosition(el);
+	return {
+		x: left + el.offsetWidth / 2,
+		y: top + el.offsetHeight / 2
+	};
 };
 
 const getAttrObject = (el: HTMLElement): Record<string, any> => {
@@ -129,4 +111,10 @@ export const swapElements = (fromEl: HTMLElement, toEl: HTMLElement): void => {
 export const setElCoords = (el: HTMLElement, coords: { x: number; y: number }) => {
 	el.style.setProperty('--x', `${coords.x}px`);
 	el.style.setProperty('--y', `${coords.y}px`);
+};
+
+export const reorderArray = (array: any[], from: number, to: number): any[] => {
+	const reorderedArray = array;
+	reorderedArray.splice(to, 0, reorderedArray.splice(from, 1)[0]);
+	return reorderedArray;
 };

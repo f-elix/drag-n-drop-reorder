@@ -1,15 +1,6 @@
 import type { Coords } from '../types/static';
 import { createMachine, assign } from '@xstate/compiled';
-import {
-	assertEventType,
-	getElMid,
-	getElOffsetBottom,
-	getElOffsetMid,
-	getElOffsetTop,
-	reorderArray,
-	swapElements,
-	setElCoords
-} from './utils';
+import { assertEventType, getElMid, getElOffsetMid, swapElements, setElCoords } from './utils';
 
 interface DragDropContext {
 	anchorCoords: Coords;
@@ -141,7 +132,8 @@ export const dragDropMachine = createMachine<DragDropContext, DragDropEvent, 'dr
 					clientCoords,
 					elCoords,
 					draggedItem,
-					itemSelector
+					itemSelector,
+					handleSelector
 				};
 			}),
 			clearDragging: assign((context, event) => {
@@ -198,16 +190,17 @@ export const dragDropMachine = createMachine<DragDropContext, DragDropEvent, 'dr
 			}),
 			swapItems: assign((context, event) => {
 				assertEventType(event, 'MOVE');
-				const { clientCoords, intersectingItem, draggedItem, handleSelector } = context;
+				const { clientCoords } = event.data;
+				const { intersectingItem, draggedItem, handleSelector } = context;
 				if (!draggedItem || !intersectingItem || !handleSelector) {
 					return context;
 				}
 				swapElements(draggedItem, intersectingItem);
-				const handle = draggedItem.querySelector(handleSelector) as HTMLElement;
+				const handle = intersectingItem.querySelector(handleSelector) as HTMLElement;
 				if (!handle) {
 					return context;
 				}
-				const anchorCoords = getElMid(handle);
+				const anchorCoords = getElOffsetMid(handle);
 				if (!anchorCoords) {
 					return context;
 				}
