@@ -2,7 +2,11 @@
 @import 'tailwindcss/dist/components.css';
 @import 'tailwindcss/dist/utilities.css';
 
-[data-state*='dragging'] ._list-item {
+._list[data-state*='dragging'] {
+	cursor: grabbing;
+}
+
+._list[data-state*='dragging'] ._list-item {
 	user-select: none;
 }
 
@@ -16,6 +20,7 @@
 }
 
 ._list-item[data-state='dragging'] {
+	--x: 0;
 	--y: 0;
 	position: relative;
 	z-index: 100;
@@ -24,7 +29,7 @@
 	box-shadow: 0 0 12px 3px rgba(0, 0, 0, 0.4);
 }
 
-._list-item[data-state='dragging'] button,
-._list-item[data-state='dragging'] button * {
-	cursor: grabbing;
+._list-item[data-state='dragging'],
+._list-item[data-state='dragging'] * {
+	pointer-events: none;
 }
