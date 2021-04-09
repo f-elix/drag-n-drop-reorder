@@ -11,13 +11,16 @@ export function assertEventType<TE extends EventObject, TType extends TE['type']
 
 export const generateId = (): string => `${Math.floor(Math.random() * Date.now())}`;
 
-export const getElMid = (el: HTMLElement): number => {
+export const getElMid = (el: HTMLElement): { x: number; y: number } | undefined => {
 	if (!el) {
-		return 0;
+		return;
 	}
 	const rect = el.getBoundingClientRect();
-	const { height, top } = rect;
-	return top + height / 2;
+	const { height, top, width, left } = rect;
+	return {
+		x: left + width / 2,
+		y: top + height / 2
+	};
 };
 
 export const getPosition = (element: HTMLElement): { x: number; y: number } => {
@@ -104,7 +107,7 @@ const removeChildren = (el: HTMLElement): void => {
 	}
 };
 
-export const reorderElements = (fromEl: HTMLElement, toEl: HTMLElement): void => {
+export const swapElements = (fromEl: HTMLElement, toEl: HTMLElement): void => {
 	const fromAttr = getAttrObject(fromEl);
 	const toAttr = getAttrObject(toEl);
 	const fromFrag = document.createDocumentFragment();
@@ -121,4 +124,9 @@ export const reorderElements = (fromEl: HTMLElement, toEl: HTMLElement): void =>
 	removeChildren(toEl);
 	fromEl.appendChild(toFrag);
 	toEl.appendChild(fromFrag);
+};
+
+export const setElCoords = (el: HTMLElement, coords: { x: number; y: number }) => {
+	el.style.setProperty('--x', `${coords.x}px`);
+	el.style.setProperty('--y', `${coords.y}px`);
 };
