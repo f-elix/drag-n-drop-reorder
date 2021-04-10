@@ -34,39 +34,49 @@ export const createDnd = (el: HTMLElement | string, itemSelector: string, handle
 		listEl.dataset.state = state.toStrings().join('.');
 	});
 
-	const onMove = (e: TouchEvent | MouseEvent) => {
+	let draggedItem: HTMLElement;
+
+	const onMove = (e: TouchEvent | PointerEvent) => {
 		const { clientX, clientY } = e instanceof TouchEvent ? e.touches[0] : e;
 		service.send({ type: 'MOVE', data: { clientCoords: { x: clientX, y: clientY } } });
 	};
 
-	const onDrop = () => {
+	const onDrop = (e: TouchEvent | PointerEvent) => {
 		service.send({ type: 'DROP' });
-		removeDragListeners();
+		removeDragListeners(e);
 	};
 
-	const addDragListeners = () => {
-		document.addEventListener('pointermove', onMove);
-		document.addEventListener('touchmove', onMove);
-		document.addEventListener('pointerup', onDrop);
-		document.addEventListener('touchend', onDrop);
+	const addDragListeners = (e: TouchEvent | PointerEvent) => {
+		if (e instanceof TouchEvent) {
+			document.addEventListener('touchmove', onMove);
+			document.addEventListener('touchend', onDrop);
+			return;
+		}
+		draggedItem.setPointerCapture(e.pointerId);
+		draggedItem.addEventListener('pointermove', onMove);
+		draggedItem.addEventListener('pointerup', onDrop);
 	};
 
-	const removeDragListeners = () => {
-		document.removeEventListener('pointermove', onMove);
-		document.removeEventListener('touchmove', onMove);
-		document.removeEventListener('pointerup', onDrop);
-		document.removeEventListener('touchend', onDrop);
+	const removeDragListeners = (e: TouchEvent | PointerEvent) => {
+		if (e instanceof TouchEvent) {
+			document.removeEventListener('touchmove', onMove);
+			document.removeEventListener('touchend', onDrop);
+			return;
+		}
+		draggedItem.releasePointerCapture(e.pointerId);
+		draggedItem.removeEventListener('pointermove', onMove);
+		draggedItem.removeEventListener('pointerup', onDrop);
 	};
 
-	const onDrag = (e: TouchEvent | MouseEvent) => {
+	const onDrag = (e: TouchEvent | PointerEvent) => {
 		const { clientX, clientY } = e instanceof TouchEvent ? e.touches[0] : e;
 		const handle = e.currentTarget as HTMLElement;
-		const item = handle.closest(itemSelector) as HTMLElement;
-		const id = item.dataset.dragId;
+		draggedItem = handle.closest(itemSelector) as HTMLElement;
+		const id = draggedItem.dataset.dragId;
 		if (!id) {
 			return;
 		}
-		const index = listItems.findIndex((el) => el === item);
+		const index = listItems.findIndex((el) => el === draggedItem);
 		if (index < 0) {
 			return;
 		}
@@ -78,12 +88,12 @@ export const createDnd = (el: HTMLElement | string, itemSelector: string, handle
 			type: 'DRAG',
 			data: {
 				clientCoords: { x: clientX, y: clientY },
-				draggedItem: item,
+				draggedItem,
 				itemSelector,
 				handleSelector
 			}
 		});
-		addDragListeners();
+		addDragListeners(e);
 	};
 
 	const onTouchStart = (e: TouchEvent) => {
