@@ -24,7 +24,7 @@ export const getElMid = (el: HTMLElement): Coords | undefined => {
 	};
 };
 
-export const getPosition = (element: HTMLElement): { left: number; top: number } => {
+export const getOffsetPosition = (element: HTMLElement): { left: number; top: number } => {
 	let xPos = 0;
 	let yPos = 0;
 
@@ -56,7 +56,7 @@ export const getElOffsetMid = (el: HTMLElement): Coords | undefined => {
 	if (!el) {
 		return;
 	}
-	const { left, top } = getPosition(el);
+	const { left, top } = getOffsetPosition(el);
 	return {
 		x: left + el.offsetWidth / 2,
 		y: top + el.offsetHeight / 2
@@ -64,19 +64,16 @@ export const getElOffsetMid = (el: HTMLElement): Coords | undefined => {
 };
 
 const getAttrObject = (el: HTMLElement): Record<string, any> => {
-	const attrObj: Record<string, any> = {};
-	Array.from(el.attributes).forEach((attr) => {
+	return Array.from(el.attributes).reduce((attrObj, attr) => {
 		attrObj[attr.nodeName] = attr.nodeValue;
-	});
-	return attrObj;
+		return attrObj;
+	}, {} as Record<string, any>);
 };
 
 const setAttr = (el: HTMLElement, attrObj: Record<string, any>): void => {
 	Array.from(el.attributes).forEach((attr) => {
 		const attrName = attr.nodeName;
-		if (!attrObj[attrName]) {
-			el.removeAttribute(attrName);
-		}
+		el.removeAttribute(attrName);
 	});
 	Object.entries(attrObj).forEach(([name, value]) => {
 		el.setAttribute(name, value);
