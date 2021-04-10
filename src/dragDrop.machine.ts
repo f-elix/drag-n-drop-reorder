@@ -172,16 +172,22 @@ export const dragDropMachine = createMachine<DragDropContext, DragDropEvent, 'dr
 				},
 				intersectingItem: (context, event) => {
 					assertEventType(event, 'MOVE');
-					const { clientCoords } = event.data;
-					const { itemSelector } = context;
-					if (!itemSelector) {
+					const { itemSelector, draggedItem, handleSelector } = context;
+					if (!itemSelector || !draggedItem || !handleSelector) {
 						return;
 					}
-					const hoveredEl = document.elementFromPoint(clientCoords.x, clientCoords.y);
-					if (!hoveredEl) {
+					const handle = draggedItem.querySelector(handleSelector) as HTMLElement;
+					const handleCoords = getElMid(handle);
+					if (!handleCoords) {
 						return;
 					}
-					const hoveredItem = hoveredEl.closest(itemSelector) as HTMLElement;
+					const hitTests = document.elementsFromPoint(handleCoords.x, handleCoords.y);
+					if (!hitTests.length) {
+						return;
+					}
+					const hoveredItem = hitTests.filter(
+						(el) => el.matches(itemSelector) && el !== draggedItem
+					)[0] as HTMLElement;
 					if (!hoveredItem) {
 						return;
 					}

@@ -29,7 +29,7 @@
 	box-shadow: 0 0 12px 3px rgba(0, 0, 0, 0.4);
 }
 
-._list-item[data-state='dragging'],
-._list-item[data-state='dragging'] * {
-	pointer-events: none;
+._list-item[data-state='dragging'] button,
+._list-item[data-state='dragging'] button * {
+	cursor: grabbing;
 }
