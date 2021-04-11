@@ -10,8 +10,6 @@ export function assertEventType<TE extends EventObject, TType extends TE['type']
 	}
 }
 
-export const generateId = (): string => `${Math.floor(Math.random() * Date.now())}`;
-
 export const getElMid = (el: HTMLElement): Coords | undefined => {
 	if (!el) {
 		return;

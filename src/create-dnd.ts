@@ -1,6 +1,6 @@
 import { interpret } from 'xstate';
 import { dragDropMachine } from './dragDrop.machine';
-import { generateId, getElMid } from './utils';
+import { getElMid } from './utils';
 
 export const createDnd = (el: HTMLElement | string, itemSelector: string, handleSelector: string) => {
 	const listEl: HTMLElement = typeof el === 'string' ? (document.querySelector(el) as HTMLElement) : el;
@@ -95,12 +95,9 @@ export const createDnd = (el: HTMLElement | string, itemSelector: string, handle
 		handles.forEach((el) => {
 			const item = el.closest(itemSelector) as HTMLElement;
 			if (!item) {
-				if (!IS_PRODUCTION) {
-					console.warn('Handle element found outside a list item.');
-				}
+				console.warn('Handle element found outside a list item.');
 				return;
 			}
-			item.dataset.dragId = generateId();
 			el.addEventListener('pointerdown', onDrag);
 			el.addEventListener('touchstart', onTouchStart);
 		});
