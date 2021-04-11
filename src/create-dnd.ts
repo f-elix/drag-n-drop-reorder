@@ -1,11 +1,24 @@
 import { interpret } from 'xstate';
 import { dragDropMachine } from './dragDrop.machine';
 
-export const createDnd = (el: HTMLElement | string, itemSelector: string, handleSelector: string) => {
-	const listEl: HTMLElement = typeof el === 'string' ? (document.querySelector(el) as HTMLElement) : el;
+interface DndOptions {
+	itemSelector: string;
+	handleSelector?: string;
+}
+
+interface DndInstance {
+	init: () => void;
+	update: () => void;
+}
+
+export const createDnd: (rootEl: HTMLElement | string, options: DndOptions) => DndInstance | undefined = (
+	rootEl = 'dnd-list',
+	{ itemSelector = 'dnd-item', handleSelector = 'dnd-item-handle' }
+) => {
+	const listEl: HTMLElement = typeof rootEl === 'string' ? (document.querySelector(rootEl) as HTMLElement) : rootEl;
 
 	if (!listEl) {
-		console.warn('Invalid list element argument. Expected an HTMLElement or a valid selector, got: ' + el);
+		console.warn('Invalid list element argument. Expected an HTMLElement or a valid selector, got: ' + rootEl);
 		return;
 	}
 	if (typeof itemSelector !== 'string') {
@@ -82,24 +95,20 @@ export const createDnd = (el: HTMLElement | string, itemSelector: string, handle
 		e.preventDefault();
 	};
 
-	const setHandles = () => {
-		handles.forEach((el) => {
-			const item = el.closest(itemSelector) as HTMLElement;
-			if (!item) {
-				console.warn('Handle element found outside a list item.');
-				return;
-			}
+	const setItemsListeners = () => {
+		const items = handles.length > 0 ? handles : listItems;
+		items.forEach((el) => {
 			el.addEventListener('pointerdown', onDrag);
 			el.addEventListener('touchstart', onTouchStart);
 		});
 	};
 
 	const update = () => {
-		setHandles();
+		setItemsListeners();
 	};
 
 	const init = () => {
-		setHandles();
+		setItemsListeners();
 		service.start();
 	};
 
