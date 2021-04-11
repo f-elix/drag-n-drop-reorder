@@ -1,10 +1,9 @@
 import type { Coords } from '../types/static';
 import { createMachine, assign } from '@xstate/compiled';
-import { assertEventType, getElMid, getElOffsetMid, swapElements, setElCoords } from './utils';
+import { assertEventType, getElMid, getElOffsetMid, swapElements } from './utils';
 
 interface DragDropContext {
 	anchorCoords: Coords;
-	itemCoords: Coords;
 	itemSelector?: string;
 	handleSelector?: string;
 	draggedItem?: HTMLElement;
@@ -34,10 +33,6 @@ const initialContext: () => DragDropContext = () => ({
 		x: 0,
 		y: 0
 	},
-	itemCoords: {
-		x: 0,
-		y: 0
-	},
 	itemSelector: undefined,
 	handleSelector: undefined,
 	draggedItem: undefined,
@@ -64,7 +59,7 @@ export const dragDropMachine = createMachine<DragDropContext, DragDropEvent, 'dr
 					pointer: {
 						on: {
 							MOVE: {
-								actions: ['updateCoords']
+								actions: ['updateCoordsAndCheckIntersection']
 							}
 						}
 					},
@@ -111,10 +106,8 @@ export const dragDropMachine = createMachine<DragDropContext, DragDropEvent, 'dr
 				assertEventType(event, 'DRAG');
 				const { clientCoords, handleSelector, draggedItem, itemSelector } = event.data;
 				draggedItem.dataset.state = 'dragging';
-				setElCoords(draggedItem, clientCoords);
 				return {
 					anchorCoords: clientCoords,
-					elCoords: clientCoords,
 					draggedItem,
 					itemSelector,
 					handleSelector
@@ -130,23 +123,17 @@ export const dragDropMachine = createMachine<DragDropContext, DragDropEvent, 'dr
 				}
 				return initialContext();
 			}),
-			updateCoords: assign({
-				itemCoords: (context, event) => {
-					assertEventType(event, 'MOVE');
-					const { anchorCoords, draggedItem } = context;
-					const { clientCoords } = event.data;
-					const itemCoords = {
-						x: clientCoords.x - anchorCoords.x,
-						y: clientCoords.y - anchorCoords.y
-					};
-					if (draggedItem) {
-						setElCoords(draggedItem, itemCoords);
-					}
-					return itemCoords;
-				},
+			updateCoordsAndCheckIntersection: assign({
 				intersectingItem: (context, event) => {
 					assertEventType(event, 'MOVE');
-					const { itemSelector, draggedItem, handleSelector } = context;
+					// Update item coords
+					const { clientCoords } = event.data;
+					const { itemSelector, draggedItem, handleSelector, anchorCoords } = context;
+					if (draggedItem) {
+						draggedItem.style.setProperty('--x', `${clientCoords.x - anchorCoords.x}px`);
+						draggedItem.style.setProperty('--y', `${clientCoords.y - anchorCoords.y}px`);
+					}
+					// Check intersection
 					if (!itemSelector || !draggedItem || !handleSelector) {
 						return;
 					}

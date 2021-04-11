@@ -103,11 +103,6 @@ export const swapElements = (fromEl: HTMLElement, toEl: HTMLElement): void => {
 	toEl.appendChild(fromFrag);
 };
 
-export const setElCoords = (el: HTMLElement, coords: { x: number; y: number }) => {
-	el.style.setProperty('--x', `${coords.x}px`);
-	el.style.setProperty('--y', `${coords.y}px`);
-};
-
 export const reorderArray = (array: any[], from: number, to: number): any[] => {
 	const reorderedArray = array;
 	reorderedArray.splice(to, 0, reorderedArray.splice(from, 1)[0]);
