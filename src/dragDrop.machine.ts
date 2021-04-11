@@ -5,7 +5,6 @@ import { assertEventType, getElMid, getElOffsetMid, swapElements } from './utils
 interface DragDropContext {
 	anchorCoords: Coords;
 	itemSelector?: string;
-	handleSelector?: string;
 	draggedItem?: HTMLElement;
 	intersectingItem?: HTMLElement;
 }
@@ -17,7 +16,6 @@ type DragDropEvent =
 				clientCoords: Coords;
 				draggedItem: HTMLElement;
 				itemSelector: string;
-				handleSelector: string;
 			};
 	  }
 	| {
@@ -34,7 +32,6 @@ const initialContext: () => DragDropContext = () => ({
 		y: 0
 	},
 	itemSelector: undefined,
-	handleSelector: undefined,
 	draggedItem: undefined,
 	intersectingItem: undefined
 });
@@ -104,13 +101,12 @@ export const dragDropMachine = createMachine<DragDropContext, DragDropEvent, 'dr
 		actions: {
 			setDragging: assign((_, event) => {
 				assertEventType(event, 'DRAG');
-				const { clientCoords, handleSelector, draggedItem, itemSelector } = event.data;
+				const { clientCoords, draggedItem, itemSelector } = event.data;
 				draggedItem.dataset.state = 'dragging';
 				return {
 					anchorCoords: clientCoords,
 					draggedItem,
-					itemSelector,
-					handleSelector
+					itemSelector
 				};
 			}),
 			clearDragging: assign((context, event) => {
@@ -128,21 +124,16 @@ export const dragDropMachine = createMachine<DragDropContext, DragDropEvent, 'dr
 					assertEventType(event, 'MOVE');
 					// Update item coords
 					const { clientCoords } = event.data;
-					const { itemSelector, draggedItem, handleSelector, anchorCoords } = context;
+					const { itemSelector, draggedItem, anchorCoords } = context;
 					if (draggedItem) {
 						draggedItem.style.setProperty('--x', `${clientCoords.x - anchorCoords.x}px`);
 						draggedItem.style.setProperty('--y', `${clientCoords.y - anchorCoords.y}px`);
 					}
 					// Check intersection
-					if (!itemSelector || !draggedItem || !handleSelector) {
+					if (!itemSelector || !draggedItem) {
 						return;
 					}
-					const handle = draggedItem.querySelector(handleSelector) as HTMLElement;
-					const handleCoords = getElMid(handle);
-					if (!handleCoords) {
-						return;
-					}
-					const hitTests = document.elementsFromPoint(handleCoords.x, handleCoords.y);
+					const hitTests = document.elementsFromPoint(clientCoords.x, clientCoords.y);
 					if (!hitTests.length) {
 						return;
 					}
@@ -157,27 +148,17 @@ export const dragDropMachine = createMachine<DragDropContext, DragDropEvent, 'dr
 			}),
 			swapItems: assign((context, event) => {
 				assertEventType(event, 'MOVE');
-				const { clientCoords } = event.data;
-				const { intersectingItem, draggedItem, handleSelector } = context;
-				if (!draggedItem || !intersectingItem || !handleSelector) {
+				const { intersectingItem, draggedItem } = context;
+				if (!draggedItem || !intersectingItem) {
 					return context;
 				}
 				swapElements(draggedItem, intersectingItem);
-				const handle = intersectingItem.querySelector(handleSelector) as HTMLElement;
-				if (!handle) {
-					return context;
-				}
-				const anchorCoords = getElOffsetMid(handle);
+				const anchorCoords = getElOffsetMid(intersectingItem);
 				if (!anchorCoords) {
 					return context;
 				}
-				const itemCoords = {
-					x: clientCoords.x - anchorCoords.x,
-					y: clientCoords.y - anchorCoords.y
-				};
 				return {
 					anchorCoords,
-					itemCoords,
 					draggedItem: intersectingItem
 				};
 			})

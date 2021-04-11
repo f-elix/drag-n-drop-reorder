@@ -84,8 +84,7 @@ export const createDnd: (rootEl: HTMLElement | string, options: DndOptions) => D
 			data: {
 				clientCoords: { x: clientX, y: clientY },
 				draggedItem,
-				itemSelector,
-				handleSelector
+				itemSelector
 			}
 		});
 		addDragListeners(e);
