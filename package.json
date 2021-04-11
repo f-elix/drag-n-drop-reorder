@@ -2,13 +2,14 @@
 	"scripts": {
 		"xstate-codegen": "xstate-codegen \"src/**.machine.ts\"",
 		"dev": "snowpack dev",
-		"start": "run-p xstate-codegen dev",
+		"start": "cross-env NODE_ENV=development && cross-env TAILWIND_MODE=watch && run-p xstate-codegen dev",
 		"build": "snowpack build",
 		"test": "echo \"This template does not include a test runner by default.\" && exit 1",
 		"format": "prettier --write \"src/**/*.{ts,js}\"",
 		"lint": "prettier --check \"src/**/*.{ts,js}\""
 	},
 	"dependencies": {
+		"cross-env": "^7.0.3",
 		"xstate": "^4.16.0"
 	},
 	"devDependencies": {
