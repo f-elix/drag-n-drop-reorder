@@ -1,6 +1,5 @@
 import { interpret } from 'xstate';
 import { dragDropMachine } from './dragDrop.machine';
-import { getElMid } from './utils';
 
 export const createDnd = (el: HTMLElement | string, itemSelector: string, handleSelector: string) => {
 	const listEl: HTMLElement = typeof el === 'string' ? (document.querySelector(el) as HTMLElement) : el;
@@ -63,18 +62,10 @@ export const createDnd = (el: HTMLElement | string, itemSelector: string, handle
 		const { clientX, clientY } = e instanceof TouchEvent ? e.touches[0] : e;
 		const handle = e.currentTarget as HTMLElement;
 		draggedItem = handle.closest(itemSelector) as HTMLElement;
-		const id = draggedItem.dataset.dragId;
-		if (!id) {
-			return;
-		}
-		const index = listItems.findIndex((el) => el === draggedItem);
-		if (index < 0) {
-			return;
-		}
-		const handleCoords = getElMid(handle);
-		if (!handleCoords) {
-			return;
-		}
+		// const index = listItems.findIndex((el) => el === draggedItem);
+		// if (index < 0) {
+		// 	return;
+		// }
 		service.send({
 			type: 'DRAG',
 			data: {

@@ -4,7 +4,6 @@ import { assertEventType, getElMid, getElOffsetMid, swapElements, setElCoords } 
 
 interface DragDropContext {
 	anchorCoords: Coords;
-	clientCoords: Coords;
 	itemCoords: Coords;
 	itemSelector?: string;
 	handleSelector?: string;
@@ -30,28 +29,26 @@ type DragDropEvent =
 	  }
 	| { type: 'DROP' };
 
+const initialContext: () => DragDropContext = () => ({
+	anchorCoords: {
+		x: 0,
+		y: 0
+	},
+	itemCoords: {
+		x: 0,
+		y: 0
+	},
+	itemSelector: undefined,
+	handleSelector: undefined,
+	draggedItem: undefined,
+	intersectingItem: undefined
+});
+
 export const dragDropMachine = createMachine<DragDropContext, DragDropEvent, 'dragDrop'>(
 	{
 		id: 'dragDrop',
 		initial: 'idle',
-		context: {
-			anchorCoords: {
-				x: 0,
-				y: 0
-			},
-			clientCoords: {
-				x: 0,
-				y: 0
-			},
-			itemCoords: {
-				x: 0,
-				y: 0
-			},
-			itemSelector: undefined,
-			handleSelector: undefined,
-			draggedItem: undefined,
-			intersectingItem: undefined
-		},
+		context: initialContext(),
 		states: {
 			idle: {
 				on: {
@@ -110,27 +107,14 @@ export const dragDropMachine = createMachine<DragDropContext, DragDropEvent, 'dr
 	},
 	{
 		actions: {
-			setDragging: assign((context, event) => {
+			setDragging: assign((_, event) => {
 				assertEventType(event, 'DRAG');
 				const { clientCoords, handleSelector, draggedItem, itemSelector } = event.data;
-				const handle = draggedItem.querySelector(handleSelector) as HTMLElement;
-				if (!handle) {
-					return context;
-				}
-				const anchorCoords = getElMid(handle);
-				if (!anchorCoords) {
-					return context;
-				}
-				const elCoords = {
-					x: clientCoords.x - anchorCoords.x,
-					y: clientCoords.y - anchorCoords.y
-				};
 				draggedItem.dataset.state = 'dragging';
-				setElCoords(draggedItem, elCoords);
+				setElCoords(draggedItem, clientCoords);
 				return {
-					anchorCoords,
-					clientCoords,
-					elCoords,
+					anchorCoords: clientCoords,
+					elCoords: clientCoords,
 					draggedItem,
 					itemSelector,
 					handleSelector
@@ -144,19 +128,9 @@ export const dragDropMachine = createMachine<DragDropContext, DragDropEvent, 'dr
 					draggedItem.style.removeProperty('--y');
 					delete draggedItem.dataset.state;
 				}
-				return {
-					anchorY: 0,
-					elY: 0,
-					clientY: 0,
-					draggedItem: undefined,
-					intersecting: false,
-
-					draggedItemIndex: undefined,
-					draggedItemId: undefined
-				};
+				return initialContext();
 			}),
 			updateCoords: assign({
-				clientCoords: (_, event) => event.data.clientCoords,
 				itemCoords: (context, event) => {
 					assertEventType(event, 'MOVE');
 					const { anchorCoords, draggedItem } = context;
