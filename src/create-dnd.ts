@@ -3,27 +3,18 @@ import { dragDropMachine } from './dragDrop.machine';
 import { generateId, getElMid } from './utils';
 
 export const createDnd = (el: HTMLElement | string, itemSelector: string, handleSelector: string) => {
-	// const IS_PRODUCTION = process && process.env?.NODE_ENV === 'production';
-	const IS_PRODUCTION = false;
-
 	const listEl: HTMLElement = typeof el === 'string' ? (document.querySelector(el) as HTMLElement) : el;
 
 	if (!listEl) {
-		if (!IS_PRODUCTION) {
-			console.warn('Invalid list element argument. Expected an HTMLElement or a valid selector, got: ' + el);
-		}
+		console.warn('Invalid list element argument. Expected an HTMLElement or a valid selector, got: ' + el);
 		return;
 	}
 	if (typeof itemSelector !== 'string') {
-		if (!IS_PRODUCTION) {
-			console.warn('Expected a valid list items selector, got: ' + itemSelector);
-		}
+		console.warn('Expected a valid list items selector, got: ' + itemSelector);
 		return;
 	}
 	if (typeof handleSelector !== 'string') {
-		if (!IS_PRODUCTION) {
-			console.warn('Expected a valid handle selector, got: ' + handleSelector);
-		}
+		console.warn('Expected a valid handle selector, got: ' + handleSelector);
 		return;
 	}
 
