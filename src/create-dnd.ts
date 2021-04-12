@@ -30,8 +30,8 @@ export const createDnd: (rootEl: HTMLElement | string, options: DndOptions) => D
 		return;
 	}
 
-	const listItems: HTMLElement[] = Array.from(listEl.querySelectorAll(itemSelector));
-	const handles: HTMLElement[] = Array.from(listEl.querySelectorAll(handleSelector));
+	const listItems = Array.from(listEl.querySelectorAll(itemSelector)) as HTMLElement[];
+	const handles = Array.from(listEl.querySelectorAll(handleSelector)) as HTMLElement[];
 
 	const service = interpret(dragDropMachine).onTransition((state) => {
 		listEl.dataset.state = state.toStrings().join('.');
@@ -75,16 +75,17 @@ export const createDnd: (rootEl: HTMLElement | string, options: DndOptions) => D
 		const { clientX, clientY } = e instanceof TouchEvent ? e.touches[0] : e;
 		const handle = e.currentTarget as HTMLElement;
 		draggedItem = handle.closest(itemSelector) as HTMLElement;
-		// const index = listItems.findIndex((el) => el === draggedItem);
-		// if (index < 0) {
-		// 	return;
-		// }
+		const index = listItems.indexOf(draggedItem);
+		if (index < 0) {
+			return;
+		}
 		service.send({
 			type: 'DRAG',
 			data: {
 				clientCoords: { x: clientX, y: clientY },
 				draggedItem,
-				itemSelector
+				itemSelector,
+				listEl
 			}
 		});
 		addDragListeners(e);

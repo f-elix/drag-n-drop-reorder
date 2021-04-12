@@ -1,11 +1,14 @@
 import type { Coords } from '../types/static';
 import { createMachine, assign } from '@xstate/compiled';
-import { assertEventType, getElMid, getElOffsetMid, swapElements } from './utils';
+import { assertEventType, flip, getElOffsetMid, isInRange } from './utils';
 
 interface DragDropContext {
 	anchorCoords: Coords;
+	listItems?: HTMLElement[];
+	listEl?: HTMLElement;
 	itemSelector?: string;
 	draggedItem?: HTMLElement;
+	draggedIndex?: number;
 	intersectingItem?: HTMLElement;
 }
 
@@ -15,6 +18,7 @@ type DragDropEvent =
 			data: {
 				clientCoords: Coords;
 				draggedItem: HTMLElement;
+				listEl: HTMLElement;
 				itemSelector: string;
 			};
 	  }
@@ -27,12 +31,15 @@ type DragDropEvent =
 	| { type: 'DROP' };
 
 const initialContext: () => DragDropContext = () => ({
+	listEl: undefined,
+	listItems: undefined,
 	anchorCoords: {
 		x: 0,
 		y: 0
 	},
 	itemSelector: undefined,
 	draggedItem: undefined,
+	draggedIndex: undefined,
 	intersectingItem: undefined
 });
 
@@ -101,12 +108,17 @@ export const dragDropMachine = createMachine<DragDropContext, DragDropEvent, 'dr
 		actions: {
 			setDragging: assign((_, event) => {
 				assertEventType(event, 'DRAG');
-				const { clientCoords, draggedItem, itemSelector } = event.data;
+				const { clientCoords, draggedItem, itemSelector, listEl } = event.data;
+				const listItems = Array.from(listEl.querySelectorAll(itemSelector)) as HTMLElement[];
+				const draggedIndex = listItems.indexOf(draggedItem);
 				draggedItem.dataset.state = 'dragging';
 				return {
 					anchorCoords: clientCoords,
 					draggedItem,
-					itemSelector
+					draggedIndex,
+					itemSelector,
+					listItems,
+					listEl
 				};
 			}),
 			clearDragging: assign((context, event) => {
@@ -148,18 +160,47 @@ export const dragDropMachine = createMachine<DragDropContext, DragDropEvent, 'dr
 			}),
 			swapItems: assign((context, event) => {
 				assertEventType(event, 'MOVE');
-				const { intersectingItem, draggedItem } = context;
-				if (!draggedItem || !intersectingItem) {
+				const { intersectingItem, draggedItem, draggedIndex, listItems, listEl, itemSelector } = context;
+				if (
+					!draggedItem ||
+					!intersectingItem ||
+					!itemSelector ||
+					!listItems ||
+					!listEl ||
+					typeof draggedIndex === 'undefined'
+				) {
 					return context;
 				}
-				swapElements(draggedItem, intersectingItem);
-				const anchorCoords = getElOffsetMid(intersectingItem);
-				if (!anchorCoords) {
-					return context;
+				const intersectingIndex = listItems.indexOf(intersectingItem);
+				const isNext = draggedIndex < intersectingIndex;
+				const allIntersectedItems = listItems.filter((el, i) => {
+					if (el === draggedItem) {
+						return false;
+					}
+					if (isNext) {
+						return isInRange(i, draggedIndex, intersectingIndex);
+					} else {
+						return isInRange(i, intersectingIndex, draggedIndex);
+					}
+				});
+				if (!isNext) {
+					allIntersectedItems.reverse();
 				}
+				allIntersectedItems.forEach((el) => {
+					flip(() => {
+						if (isNext) {
+							el.previousElementSibling?.before(el);
+						} else {
+							el.nextElementSibling?.after(el);
+						}
+					}, el);
+				});
+				const anchorCoords = getElOffsetMid(draggedItem);
+				const updatedListItems = Array.from(listEl.querySelectorAll(itemSelector)) as HTMLElement[];
 				return {
 					anchorCoords,
-					draggedItem: intersectingItem
+					draggedIndex: intersectingIndex,
+					listItems: updatedListItems
 				};
 			})
 		},

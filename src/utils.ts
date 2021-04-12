@@ -10,18 +10,6 @@ export function assertEventType<TE extends EventObject, TType extends TE['type']
 	}
 }
 
-export const getElMid = (el: HTMLElement): Coords | undefined => {
-	if (!el) {
-		return;
-	}
-	const rect = el.getBoundingClientRect();
-	const { height, top, width, left } = rect;
-	return {
-		x: left + width / 2,
-		y: top + height / 2
-	};
-};
-
 export const getOffsetPosition = (element: HTMLElement): { left: number; top: number } => {
 	let xPos = 0;
 	let yPos = 0;
@@ -61,46 +49,28 @@ export const getElOffsetMid = (el: HTMLElement): Coords | undefined => {
 	};
 };
 
-const getAttrObject = (el: HTMLElement): Record<string, any> => {
-	return Array.from(el.attributes).reduce((attrObj, attr) => {
-		attrObj[attr.nodeName] = attr.nodeValue;
-		return attrObj;
-	}, {} as Record<string, any>);
+const getRect = (el: HTMLElement) => {
+	return el.getBoundingClientRect();
 };
 
-const setAttr = (el: HTMLElement, attrObj: Record<string, any>): void => {
-	Array.from(el.attributes).forEach((attr) => {
-		const attrName = attr.nodeName;
-		el.removeAttribute(attrName);
-	});
-	Object.entries(attrObj).forEach(([name, value]) => {
-		el.setAttribute(name, value);
+export const flip: (callback: () => void, el: HTMLElement) => void = (callback, el) => {
+	const firstRect = getRect(el);
+	const currentElStyle = el.getAttribute('style') || '';
+	callback();
+	requestAnimationFrame(() => {
+		const lastRect = getRect(el);
+		const dx = firstRect.x - lastRect.x;
+		const dy = firstRect.y - lastRect.y;
+		const flipStyles = `transition-duration: 0s !important; transform: translate3d(${dx}px, ${dy}px, 0);`;
+		el.setAttribute('style', flipStyles);
+		requestAnimationFrame(() => {
+			el.setAttribute('style', currentElStyle);
+		});
 	});
 };
 
-const removeChildren = (el: HTMLElement): void => {
-	while (el.firstChild) {
-		el.removeChild(el.firstChild);
-	}
-};
-
-export const swapElements = (fromEl: HTMLElement, toEl: HTMLElement): void => {
-	const fromAttr = getAttrObject(fromEl);
-	const toAttr = getAttrObject(toEl);
-	const fromFrag = document.createDocumentFragment();
-	const toFrag = document.createDocumentFragment();
-	Array.from(fromEl.children).forEach((child) => {
-		fromFrag.appendChild(child);
-	});
-	Array.from(toEl.children).forEach((child) => {
-		toFrag.appendChild(child);
-	});
-	setAttr(toEl, fromAttr);
-	setAttr(fromEl, toAttr);
-	removeChildren(fromEl);
-	removeChildren(toEl);
-	fromEl.appendChild(toFrag);
-	toEl.appendChild(fromFrag);
+export const isInRange: (value: number, min: number, max: number) => Boolean = (value, min, max) => {
+	return value >= min && value <= max;
 };
 
 export const reorderArray = (array: any[], from: number, to: number): any[] => {
