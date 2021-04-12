@@ -73,6 +73,18 @@ export const isInRange: (value: number, min: number, max: number) => Boolean = (
 	return value >= min && value <= max;
 };
 
+export const isColliding: (a: HTMLElement, b: HTMLElement) => Boolean = (a, b) => {
+	const aRect = a.getBoundingClientRect();
+	const bRect = b.getBoundingClientRect();
+
+	return !(
+		aRect.top + aRect.height < bRect.top ||
+		aRect.top > bRect.top + bRect.height ||
+		aRect.left + aRect.width < bRect.left ||
+		aRect.left > bRect.left + bRect.width
+	);
+};
+
 export const reorderArray = (array: any[], from: number, to: number): any[] => {
 	const reorderedArray = array;
 	reorderedArray.splice(to, 0, reorderedArray.splice(from, 1)[0]);

@@ -1,6 +1,6 @@
 import type { Coords } from '../types/static';
 import { createMachine, assign } from '@xstate/compiled';
-import { assertEventType, flip, getElOffsetMid, isInRange } from './utils';
+import { assertEventType, flip, getElOffsetMid, isColliding, isInRange } from './utils';
 
 interface DragDropContext {
 	anchorCoords: Coords;
@@ -10,6 +10,7 @@ interface DragDropContext {
 	draggedItem?: HTMLElement;
 	draggedIndex?: number;
 	intersectingItem?: HTMLElement;
+	lastSwappedItem?: HTMLElement;
 }
 
 type DragDropEvent =
@@ -39,6 +40,7 @@ const initialContext: () => DragDropContext = () => ({
 	},
 	itemSelector: undefined,
 	draggedItem: undefined,
+	lastSwappedItem: undefined,
 	draggedIndex: undefined,
 	intersectingItem: undefined
 });
@@ -136,11 +138,12 @@ export const dragDropMachine = createMachine<DragDropContext, DragDropEvent, 'dr
 					assertEventType(event, 'MOVE');
 					// Update item coords
 					const { clientCoords } = event.data;
-					const { itemSelector, draggedItem, anchorCoords } = context;
-					if (draggedItem) {
-						draggedItem.style.setProperty('--x', `${clientCoords.x - anchorCoords.x}px`);
-						draggedItem.style.setProperty('--y', `${clientCoords.y - anchorCoords.y}px`);
+					const { itemSelector, draggedItem, anchorCoords, lastSwappedItem } = context;
+					if (!draggedItem) {
+						return;
 					}
+					draggedItem.style.setProperty('--x', `${clientCoords.x - anchorCoords.x}px`);
+					draggedItem.style.setProperty('--y', `${clientCoords.y - anchorCoords.y}px`);
 					// Check intersection
 					if (!itemSelector || !draggedItem) {
 						return;
@@ -150,7 +153,7 @@ export const dragDropMachine = createMachine<DragDropContext, DragDropEvent, 'dr
 						return;
 					}
 					const hoveredItem = hitTests.filter(
-						(el) => el.matches(itemSelector) && el !== draggedItem
+						(el) => el.matches(itemSelector) && el !== draggedItem && el !== lastSwappedItem
 					)[0] as HTMLElement;
 					if (!hoveredItem) {
 						return;
@@ -197,10 +200,12 @@ export const dragDropMachine = createMachine<DragDropContext, DragDropEvent, 'dr
 				});
 				const anchorCoords = getElOffsetMid(draggedItem);
 				const updatedListItems = Array.from(listEl.querySelectorAll(itemSelector)) as HTMLElement[];
+				const lastSwappedItem = allIntersectedItems[allIntersectedItems.length - 1];
 				return {
 					anchorCoords,
 					draggedIndex: intersectingIndex,
-					listItems: updatedListItems
+					listItems: updatedListItems,
+					lastSwappedItem: lastSwappedItem
 				};
 			})
 		},
