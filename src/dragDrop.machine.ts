@@ -1,6 +1,6 @@
 import type { Coords } from '../types/static';
 import { createMachine, assign } from '@xstate/compiled';
-import { assertEventType, flip, getElOffsetMid, isColliding, isInRange } from './utils';
+import { assertEventType, flip, getElOffsetMid, isInRange } from './utils';
 
 interface DragDropContext {
 	anchorCoords: Coords;
@@ -188,17 +188,25 @@ export const dragDropMachine = createMachine<DragDropContext, DragDropEvent, 'dr
 					allIntersectedItems.reverse();
 				}
 				allIntersectedItems.forEach((el) => {
-					flip(
-						() => {
-							if (isNext) {
-								el.previousElementSibling?.before(el);
-							} else {
-								el.nextElementSibling?.after(el);
-							}
-						},
-						draggedItem,
-						el
-					);
+					const prevEl = el.previousElementSibling as HTMLElement;
+					const nextEl = el.nextElementSibling as HTMLElement;
+					if (isNext && prevEl) {
+						flip(
+							() => {
+								prevEl.before(el);
+							},
+							prevEl,
+							el
+						);
+					} else if (nextEl) {
+						flip(
+							() => {
+								nextEl.after(el);
+							},
+							nextEl,
+							el
+						);
+					}
 				});
 				const anchorCoords = getElOffsetMid(draggedItem);
 				const updatedListItems = Array.from(listEl.querySelectorAll(itemSelector)) as HTMLElement[];
