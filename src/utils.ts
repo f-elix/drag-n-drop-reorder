@@ -53,36 +53,26 @@ const getRect = (el: HTMLElement) => {
 	return el.getBoundingClientRect();
 };
 
-export const flip: (callback: () => void, el: HTMLElement) => void = (callback, el) => {
-	const firstRect = getRect(el);
-	const currentElStyle = el.getAttribute('style') || '';
+export const flip: (callback: () => void, firstEl: HTMLElement, lastEl: HTMLElement) => void = (
+	callback,
+	firstEl,
+	lastEl
+) => {
+	const firstRect = getRect(firstEl);
 	callback();
+	const lastRect = getRect(lastEl);
+	const dx = firstRect.x - lastRect.x;
+	const dy = firstRect.y - lastRect.y;
+	lastEl.style.transform = `translate3d(${dx}px, ${dy}px, 0)`;
+	lastEl.style.transitionDuration = '0s';
 	requestAnimationFrame(() => {
-		const lastRect = getRect(el);
-		const dx = firstRect.x - lastRect.x;
-		const dy = firstRect.y - lastRect.y;
-		const flipStyles = `transition-duration: 0s !important; transform: translate3d(${dx}px, ${dy}px, 0);`;
-		el.setAttribute('style', flipStyles);
-		requestAnimationFrame(() => {
-			el.setAttribute('style', currentElStyle);
-		});
+		lastEl.style.transform = '';
+		lastEl.style.transitionDuration = '';
 	});
 };
 
 export const isInRange: (value: number, min: number, max: number) => Boolean = (value, min, max) => {
 	return value >= min && value <= max;
-};
-
-export const isColliding: (a: HTMLElement, b: HTMLElement) => Boolean = (a, b) => {
-	const aRect = a.getBoundingClientRect();
-	const bRect = b.getBoundingClientRect();
-
-	return !(
-		aRect.top + aRect.height < bRect.top ||
-		aRect.top > bRect.top + bRect.height ||
-		aRect.left + aRect.width < bRect.left ||
-		aRect.left > bRect.left + bRect.width
-	);
 };
 
 export const reorderArray = (array: any[], from: number, to: number): any[] => {

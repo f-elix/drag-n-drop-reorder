@@ -10,7 +10,6 @@ interface DragDropContext {
 	draggedItem?: HTMLElement;
 	draggedIndex?: number;
 	intersectingItem?: HTMLElement;
-	lastSwappedItem?: HTMLElement;
 }
 
 type DragDropEvent =
@@ -40,7 +39,6 @@ const initialContext: () => DragDropContext = () => ({
 	},
 	itemSelector: undefined,
 	draggedItem: undefined,
-	lastSwappedItem: undefined,
 	draggedIndex: undefined,
 	intersectingItem: undefined
 });
@@ -138,7 +136,7 @@ export const dragDropMachine = createMachine<DragDropContext, DragDropEvent, 'dr
 					assertEventType(event, 'MOVE');
 					// Update item coords
 					const { clientCoords } = event.data;
-					const { itemSelector, draggedItem, anchorCoords, lastSwappedItem } = context;
+					const { itemSelector, draggedItem, anchorCoords } = context;
 					if (!draggedItem) {
 						return;
 					}
@@ -153,7 +151,7 @@ export const dragDropMachine = createMachine<DragDropContext, DragDropEvent, 'dr
 						return;
 					}
 					const hoveredItem = hitTests.filter(
-						(el) => el.matches(itemSelector) && el !== draggedItem && el !== lastSwappedItem
+						(el) => el.matches(itemSelector) && el !== draggedItem
 					)[0] as HTMLElement;
 					if (!hoveredItem) {
 						return;
@@ -190,22 +188,24 @@ export const dragDropMachine = createMachine<DragDropContext, DragDropEvent, 'dr
 					allIntersectedItems.reverse();
 				}
 				allIntersectedItems.forEach((el) => {
-					flip(() => {
-						if (isNext) {
-							el.previousElementSibling?.before(el);
-						} else {
-							el.nextElementSibling?.after(el);
-						}
-					}, el);
+					flip(
+						() => {
+							if (isNext) {
+								el.previousElementSibling?.before(el);
+							} else {
+								el.nextElementSibling?.after(el);
+							}
+						},
+						draggedItem,
+						el
+					);
 				});
 				const anchorCoords = getElOffsetMid(draggedItem);
 				const updatedListItems = Array.from(listEl.querySelectorAll(itemSelector)) as HTMLElement[];
-				const lastSwappedItem = allIntersectedItems[allIntersectedItems.length - 1];
 				return {
 					anchorCoords,
 					draggedIndex: intersectingIndex,
-					listItems: updatedListItems,
-					lastSwappedItem: lastSwappedItem
+					listItems: updatedListItems
 				};
 			})
 		},
